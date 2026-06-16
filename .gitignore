@@ -5,6 +5,7 @@ node_modules/
 .sni/
 manifest.json
 sni-setup.md
+CONSTITUTION.md
 
 # OS / editor noise
 .DS_Store

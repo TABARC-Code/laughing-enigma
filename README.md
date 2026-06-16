@@ -11,8 +11,14 @@ bin/
   sni-init.js            # scaffold manifest.json + .sni/ from a skills directory
   sni-cowork-bridge.js   # record feedback, roll up metrics, generate Cowork guide
   sni-validator.js       # validate contracts / cycles / orphans (CI-friendly)
+  sni-kaizen.js          # run a Kaizen pass on a drifting skill and persist it
+lib/
+  metrics.js             # drift_risk / loads_per_week (shared by init + bridge)
+  kaizen.js              # Kaizen retrospective logic (seven wastes, five questions)
+skills/
+  kaizen/SKILL.md        # the Kaizen pass as a first-class, manifest-trackable skill
 test/
-  sni.test.js            # smoke + behaviour tests (node --test)
+  *.test.js              # smoke + behaviour + metrics + kaizen tests (node --test)
 docs/
   SNI-README.md          # original getting-started guide
   SNI-DEPLOYMENT.md      # distribution / deployment scenarios
@@ -35,9 +41,25 @@ node bin/sni-validator.js audit /path/to/skills
 # Generate the Cowork integration guide
 node bin/sni-cowork-bridge.js guide /path/to/skills
 
+# Close the loop: run a Kaizen pass on the most-drifted skill
+node bin/sni-kaizen.js list /path/to/skills
+node bin/sni-kaizen.js retro /path/to/skills            # writes a retro scaffold
+node bin/sni-kaizen.js complete /path/to/skills <skill> --note "standard to formalise"
+
 # Run the tests
 npm test
 ```
+
+## The improvement loop
+
+SNI computes `drift_risk` to surface *what* needs attention; **Kaizen** is the
+discipline that captures the improvement so it persists. Grounded in *"The
+Standard Is Never Finished"*: because AI is stateless between sessions, the
+improvement has to live in a written system, not the tool. `sni-kaizen`
+therefore turns a drift signal into a written retrospective (seven wastes, five
+questions), a `CONSTITUTION.md` entry, and a manifest `kaizen_history` record —
+then clears the drift. The standard is never finished; this is the mechanism
+for improving it.
 
 Requires Node ≥ 18 (tested on Node 22). No runtime dependencies.
 

@@ -6,7 +6,8 @@
   "bin": {
     "sni-init": "bin/sni-init.js",
     "sni-cowork-bridge": "bin/sni-cowork-bridge.js",
-    "sni-validator": "bin/sni-validator.js"
+    "sni-validator": "bin/sni-validator.js",
+    "sni-kaizen": "bin/sni-kaizen.js"
   },
   "scripts": {
     "test": "node --test"
