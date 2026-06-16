@@ -18,6 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const { applyMetrics } = require('../lib/metrics.js');
+const { retroMarkdown } = require('../lib/kaizen.js');
 
 class SNICoworkBridge {
   constructor(skillsDirectory) {
@@ -94,7 +95,47 @@ class SNICoworkBridge {
     const logFile = path.join(logsDir, `feedback-${Date.now()}.json`);
     fs.writeFileSync(logFile, JSON.stringify(logEntry, null, 2));
 
+    // Reactive Kaizen: a negative signal is exactly the "negative signal" the
+    // skill's feedback loop defines as a trigger for a Kaizen pass. Open a
+    // retro immediately so the correction is captured, not lost as motion.
+    if (feedbackType === 'negative' && !process.env.SNI_NO_AUTO_RETRO) {
+      logEntry.retro = this.openRetro(skillId, feedback);
+    }
+
     return logEntry;
+  }
+
+  /**
+   * Open a Kaizen retro scaffold for a skill (reactive trigger). Deduped to at
+   * most one auto-retro per skill per day so a burst of negatives doesn't spam
+   * the retros directory. Returns the retro path, or the existing one.
+   */
+  openRetro(skillId, feedbackText) {
+    const retrosDir = path.join(this.sniDir, 'retros');
+    fs.mkdirSync(retrosDir, { recursive: true });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const existing = fs.readdirSync(retrosDir)
+      .find(f => f.endsWith(`-${skillId}.md`) && f.includes(`retro-${today}`));
+    if (existing) return path.join(retrosDir, existing);
+
+    // Resolve the real skill from the manifest if one exists, for accurate
+    // drift/caller context; otherwise fall back to a minimal stub.
+    let skill = { id: skillId, called_by: [], calls: [], metrics: {}, last_updated: null };
+    try {
+      const manifest = this.loadManifest();
+      const found = (manifest.skills || []).find(s => s.id === skillId);
+      if (found) skill = found;
+    } catch (_) {
+      // no manifest yet — stub is fine
+    }
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const retroPath = path.join(retrosDir, `retro-${stamp}-${skillId}.md`);
+    fs.writeFileSync(retroPath, retroMarkdown(skill, new Date(), {
+      trigger: `Negative feedback: ${feedbackText || '(no detail given)'}`,
+    }));
+    return retroPath;
   }
 
   /**
@@ -327,8 +368,13 @@ if (require.main === module) {
         const skillId = process.argv[4];
         const feedbackType = process.argv[5] || 'neutral';
         const feedback = process.argv[6] || '';
-        bridge.recordFeedback(skillId, feedbackType, feedback);
+        const entry = bridge.recordFeedback(skillId, feedbackType, feedback);
         console.log(`✅ Feedback recorded for ${skillId}`);
+        if (entry.retro) {
+          console.log(`⚠ Negative signal → Kaizen retro opened:`);
+          console.log(`   ${entry.retro}`);
+          console.log(`   Close it with: node bin/sni-kaizen.js complete ${skillsDir} ${skillId} --note "…"`);
+        }
         break;
       
       case 'rollup':

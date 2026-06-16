@@ -61,6 +61,17 @@ questions), a `CONSTITUTION.md` entry, and a manifest `kaizen_history` record �
 then clears the drift. The standard is never finished; this is the mechanism
 for improving it.
 
+The loop is both **scheduled** (drift surfaces stale skills over time) and
+**reactive**: recording negative feedback auto-opens a Kaizen retro for that
+skill immediately, so the correction is captured rather than lost as "motion".
+
+```bash
+node bin/sni-cowork-bridge.js feedback /path/to/skills <skill> negative "what went wrong"
+# → ⚠ Negative signal → Kaizen retro opened: .sni/retros/retro-…-<skill>.md
+```
+
+Deduped to one auto-retro per skill per day; set `SNI_NO_AUTO_RETRO=1` to disable.
+
 Requires Node ≥ 18 (tested on Node 22). No runtime dependencies.
 
 ## Status
