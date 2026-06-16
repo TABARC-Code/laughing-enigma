@@ -1,0 +1,12 @@
+node_modules/
+*.log
+
+# SNI runtime artifacts (generated into target skill directories)
+.sni/
+manifest.json
+sni-setup.md
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/

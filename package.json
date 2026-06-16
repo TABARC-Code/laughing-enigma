@@ -1,0 +1,46 @@
+{
+  "name": "sni-cowork",
+  "version": "1.0.0",
+  "description": "Skill Network Integration for Cowork: Auto-orchestrate collaborative Claude skill development",
+  "main": "bin/sni-init.js",
+  "bin": {
+    "sni-init": "bin/sni-init.js",
+    "sni-cowork-bridge": "bin/sni-cowork-bridge.js",
+    "sni-validator": "bin/sni-validator.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "claude",
+    "skills",
+    "cowork",
+    "collaboration",
+    "automation",
+    "orchestration",
+    "manifest",
+    "validation",
+    "worldbuilding",
+    "agent"
+  ],
+  "author": "TABARC-Code",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TABARC-Code/sni-cowork"
+  },
+  "bugs": {
+    "url": "https://github.com/TABARC-Code/sni-cowork/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "bin/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ]
+}
