@@ -39,6 +39,7 @@
   "devDependencies": {},
   "files": [
     "bin/",
+    "lib/",
     "docs/",
     "README.md",
     "LICENSE"

@@ -19,6 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { applyMetrics } = require('../lib/metrics.js');
 
 class SNIBootstrapper {
   constructor(targetPath) {
@@ -85,7 +86,17 @@ class SNIBootstrapper {
       const skillId = this.extractSkillId(skillPath);
       const skillName = this.extractSkillName(content);
       const relationships = this.parseRelationships(content);
-      
+
+      // Use the file's real modification time so drift can actually
+      // accumulate across runs (previously this was set to "now" every run,
+      // which made drift_risk impossible to compute).
+      let lastUpdated;
+      try {
+        lastUpdated = fs.statSync(skillPath).mtime.toISOString();
+      } catch (_) {
+        lastUpdated = new Date().toISOString();
+      }
+
       const skillEntry = {
         id: skillId,
         name: skillName,
@@ -93,7 +104,7 @@ class SNIBootstrapper {
         type: 'procedure',
         domain: this.extractDomain(skillPath),
         lines: content.split('\n').length,
-        last_updated: new Date().toISOString(),
+        last_updated: lastUpdated,
         calls: relationships.calls || [],
         called_by: relationships.called_by || [],
         graduation_history: [],
@@ -330,6 +341,20 @@ class SNIBootstrapper {
       orphans.forEach(id => console.log(`  - ${id}`));
     }
     
+    return this;
+  }
+
+  /**
+   * Step 5.5: Compute drift_risk and loads_per_week from file mtimes and any
+   * accumulated feedback logs. Safe to run before any logs exist (loads = 0,
+   * drift falls back to pure staleness).
+   */
+  computeMetrics() {
+    console.log(`📈 Computing drift and usage metrics...`);
+    const logsDir = path.join(this.targetPath, '.sni', 'logs');
+    applyMetrics(this.manifest, { logsDir });
+    this.manifest.integrity_checks.last_run = new Date().toISOString();
+    console.log(`✓ Metrics computed`);
     return this;
   }
 
@@ -621,6 +646,7 @@ ${this.manifest.integrity_checks.orphans.length > 0 ? `\nOrphans: ${this.manifes
         .validateContracts()
         .detectCycles()
         .detectOrphans()
+        .computeMetrics()
         .writeManifest()
         .createSNIDirectory()
         .generateCoworkTasks()

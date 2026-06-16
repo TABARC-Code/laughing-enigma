@@ -17,6 +17,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { applyMetrics } = require('../lib/metrics.js');
 
 class SNICoworkBridge {
   constructor(skillsDirectory) {
@@ -125,11 +126,14 @@ class SNICoworkBridge {
         skill.metrics.feedback_positive = fb.positive;
         skill.metrics.feedback_neutral = fb.neutral;
         skill.metrics.feedback_negative = fb.negative;
-        
+
         const total = fb.positive + fb.negative;
         skill.metrics.value_signal = total > 0 ? fb.positive / total : 0;
       }
     });
+
+    // Recompute loads_per_week and drift_risk from the same logs + file mtimes.
+    applyMetrics(manifest, { logsDir });
 
     manifest.integrity_checks.last_run = new Date().toISOString();
 

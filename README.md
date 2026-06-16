@@ -43,7 +43,9 @@ Requires Node ≥ 18 (tested on Node 22). No runtime dependencies.
 
 ## Status
 
-`v1` surface (the three documented binaries) is functional and tested. The
-self-improving metric loop (`drift_risk`, `loads_per_week`) and hypothesis
-graduation described in the docs are **not yet implemented** — they are tracked
-as M1–M6 in [`SELF_AUDIT.md`](./SELF_AUDIT.md).
+`v1` surface (the three documented binaries) is functional and tested, and the
+self-improving metric loop (`drift_risk`, `loads_per_week`) is now implemented
+in `lib/metrics.js` — drift starts as deterministic staleness and evolves as
+usage feedback accumulates. Remaining roadmap items (hypothesis graduation,
+`fix-contracts`, neutral-feedback handling, log compaction, ID-collision
+checks) are tracked as M2–M6 in [`SELF_AUDIT.md`](./SELF_AUDIT.md).

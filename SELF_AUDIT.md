@@ -16,7 +16,7 @@ This audit fixed every defect that was a clear correctness bug (so the tools now
 |--------|-------|
 | Critical defects (tool non-functional) — **fixed** | 4 |
 | High-severity issues — **fixed** | 2 |
-| Medium / design-dependent — **documented as roadmap** | 6 |
+| Medium / design-dependent — **M1 implemented; M2–M6 roadmap** | 6 |
 
 ---
 
@@ -91,8 +91,18 @@ After the fixes, the full pipeline runs end-to-end on a fixture (`alpha → beta
 
 These need product decisions, so they are recorded rather than guessed at.
 
-### M1 — `drift_risk` and `loads_per_week` are never computed
-The docs treat these as the heart of the "self-improving" loop, with thresholds and alerts — but no code ever sets them; they stay `0.0`. The validator now *reports* this gap honestly. **Decision needed:** define drift (e.g. time since `last_updated` vs. caller count) and a usage source (the `.sni/logs/` feedback is the only signal that exists today).
+### M1 — `drift_risk` and `loads_per_week` are never computed — ✅ DONE
+Previously the heart of the "self-improving" loop was undefined; both metrics stayed `0.0`. Implemented in `lib/metrics.js` (shared by `sni-init` and the bridge, matching the architecture the deployment docs describe):
+
+```
+drift_risk = clamp( age_drift × importance × usage_damping , 0, 1)
+  age_drift     = days_since_last_update / 150        (0.4 alert at ~60d, 1.0 at ~150d)
+  importance    = 1 + 0.15 × (number of callers)
+  usage_damping = 1 / (1 + loads_per_week)
+loads_per_week  = feedback entries in trailing 28d / 4
+```
+
+This is the **hybrid "efficient + evolution-based"** model: deterministic staleness on day one (no logs required), evolving toward usage-driven as `.sni/logs/` feedback accumulates, and weighted by how depended-upon a skill is. Thresholds are configurable via `DEFAULTS`. Also fixed the latent bug where `last_updated` was stamped to "now" on every run (drift could never accumulate) — it now reads the file's real mtime. Covered by `test/metrics.test.js` and verified end-to-end (a stale skill's drift drops from 0.69 → 0.23 after real use, while an abandoned one stays flagged).
 
 ### M2 — Documented commands that don't exist
 `sni-cowork-bridge fix-contracts` (deployment troubleshooting) is referenced but unimplemented. Either build it (auto-insert the missing `called_by` counter-entry) or remove the reference.

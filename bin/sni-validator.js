@@ -27,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const SNIBootstrapper = require('./sni-init.js');
+const { DEFAULTS } = require('../lib/metrics.js');
 
 /**
  * Resolve a manifest for the given directory. Prefer an on-disk manifest.json;
@@ -174,14 +175,17 @@ function reportAudit(manifest, source) {
   console.log('\n## Orphans');
   reportOrphans(manifest);
 
-  // Surface metric coverage honestly: drift_risk / loads_per_week are not
-  // computed by the current toolchain, so report when they are all zero.
-  console.log('\n## Metric coverage');
-  const driftMissing = manifest.skills.every(s => !s.metrics || (s.metrics.drift_risk || 0) === 0);
-  const loadsMissing = manifest.skills.every(s => !s.metrics || (s.metrics.loads_per_week || 0) === 0);
-  if (driftMissing) console.log('  ⚠ drift_risk is 0 for every skill — no drift signal is being computed');
-  if (loadsMissing) console.log('  ⚠ loads_per_week is 0 for every skill — usage is not being tracked');
-  if (!driftMissing && !loadsMissing) console.log('  ✓ drift and usage metrics are populated');
+  // Drift signals: list the skills that have crossed the Kaizen alert line.
+  console.log('\n## Drift signals');
+  const drifting = manifest.skills
+    .filter(s => s.metrics && (s.metrics.drift_risk || 0) > DEFAULTS.DRIFT_ALERT)
+    .sort((a, b) => b.metrics.drift_risk - a.metrics.drift_risk);
+  if (drifting.length === 0) {
+    console.log(`  ✓ No skill exceeds the drift alert threshold (${DEFAULTS.DRIFT_ALERT})`);
+  } else {
+    console.log(`  ⚠ ${drifting.length} skill(s) need a Kaizen pass (drift_risk > ${DEFAULTS.DRIFT_ALERT}):`);
+    drifting.forEach(s => console.log(`  - ${s.id}: drift_risk=${s.metrics.drift_risk}, loads/wk=${s.metrics.loads_per_week}`));
+  }
 
   return contractsCode || cyclesCode ? 1 : 0;
 }
