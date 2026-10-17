@@ -1,0 +1,153 @@
+SNI: Skill Network Integration for Cowork
+Complete Automation Package for Collaborative Claude Skill Development
+
+DELIVERABLES
+════════════
+
+1. sni-init.js (440 lines)
+   - Auto-scaffold manifest.json from any Claude skill directory
+   - Discover SKILL.md files
+   - Parse relationships (Feeds into / Fed by / Feedback loops)
+   - Validate bidirectional contracts
+   - Detect cycles & orphans
+   - Generate Cowork task templates
+   - Create .sni/ internal state directory
+
+2. sni-cowork-bridge.js (300 lines)
+   - Record feedback from Cowork tasks (positive/neutral/negative)
+   - Roll up session logs into manifest metrics
+   - Generate Cowork integration guide
+   - Manage SNI state
+
+3. sni-validator.js (utility)
+   - Validate skill contracts bidirectionally
+   - Detect cycles in skill graph
+   - Find orphans (unused skills)
+   - Compute drift risk
+   - Full system audit
+
+4. Documentation
+   - SNI-README.md — Getting started, quick reference
+   - SNI-DEPLOYMENT.md — Distribution, deployment scenarios
+   - package.json — npm packaging metadata
+
+WHAT USERS GET
+══════════════
+
+Command line:
+  npx sni-init /path/to/skills
+  → manifest.json + .sni/ + Cowork task templates
+
+In Cowork:
+  1. Load manifest.json (shows current skill graph state)
+  2. Use Build / Improve / Maintenance tasks
+  3. Provide feedback at task end
+  4. System auto-updates metrics
+  5. Weekly maintenance surfaces improvement signals
+
+Benefits:
+  ✓ Automatic manifest generation (no manual labor)
+  ✓ Bidirectional contract validation
+  ✓ Cycle detection (catches architectural mistakes)
+  ✓ Drift signals (which skills need attention)
+  ✓ Async collaboration (Cowork-native)
+  ✓ Works with ANY Claude skill system (not just worldbuilding)
+  ✓ Self-improving (feedback → metrics → Kaizen)
+
+KEY FEATURES
+════════════
+
+1. Universal: Works with worldbuilding, code architecture, design systems, content frameworks, anything with skills
+
+2. Cowork-native: Manifest as shared document, tasks as collaboration units, feedback as improvement signal
+
+3. Validation: Every skill contract checked bidirectionally; cycles detected; orphans identified
+
+4. Metrics: value_signal (usefulness), drift_risk (staleness), orphan_risk (disuse), loads_per_week (frequency)
+
+5. Signals: High drift_risk → "This skill needs Kaizen". Low value_signal → "Consider redesign or archive"
+
+6. Closed Loop: Feedback → Metrics → Signals → Kaizen → Improved Skill → Repeat
+
+ARCHITECTURE
+════════════
+
+Layer 1: Discovery (sni-init)
+  Scans /path/to/skills for SKILL.md
+  → Extracts metadata + relationships
+  → Generates manifest.json
+
+Layer 2: Validation (sni-validator)
+  Checks contracts bidirectional
+  → Detects cycles
+  → Identifies orphans
+  → Computes drift risk
+
+Layer 3: Integration (sni-cowork-bridge)
+  Records task feedback
+  → Rolls up into metrics
+  → Surfaces improvement signals
+  → Generates guides
+
+USAGE EXAMPLES
+══════════════
+
+Example 1: Single Developer
+  $ sni-init ~/my-worldbuilding-skills
+  $ Create Cowork workspace
+  $ Import manifest.json + task templates
+  $ Start "Build: Fantasy Society" task
+  $ Complete task, provide feedback
+  $ Weekly maintenance runs automatically
+
+Example 2: Team (3–5 people)
+  Person A: Build new skill (Cowork task)
+  Person B: Improve existing skill (Cowork task)
+  Person C: Run maintenance (Cowork task)
+  → All feedback recorded in manifest
+  → Metrics updated automatically
+  → Next month's Kaizen targets clear
+
+Example 3: Enterprise (multiple domains)
+  Design system team: own manifest, 8 skills
+  Code architecture team: own manifest, 12 skills
+  Content framework team: own manifest, 6 skills
+  → Central GitHub mirroring manifests
+  → CI/CD validates contracts on push
+  → Shared metrics dashboard
+
+DEPLOYMENT
+══════════
+
+Option 1: npm (recommended)
+  npm publish sni-cowork
+  Users: npm install -g sni-cowork && sni-init /path
+
+Option 2: Standalone scripts
+  GitHub release with bin/ files
+  Users: curl + chmod + node
+
+Option 3: Docker
+  Dockerfile included
+  Users: docker run sni-cowork /path
+
+NEXT STEPS FOR YOU
+══════════════════
+
+1. Review all 4 deliverables
+2. Create GitHub repo: github.com/TABARC-Code/sni-cowork
+3. Publish to npm (follow SNI-DEPLOYMENT.md checklist)
+4. Share with worldbuilding community
+5. Gather feedback for v2.0
+
+V2.0 FEATURES (Planned)
+═══════════════════════
+
+- Manifest import/merge (for existing systems)
+- Custom validators per domain
+- Hypothesis graduation automation
+- Drift signal explanations
+- Web dashboard (visual skill graph)
+- GitHub integration
+- Slack notifications
+
